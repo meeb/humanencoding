@@ -1,3 +1,4 @@
+import os
 import unittest
 import humanencoding
 
@@ -94,6 +95,13 @@ class TestEncoder(unittest.TestCase):
         except humanencoding.HumanEncodingError:
             raised_max_size_error = True
         self.assertTrue(raised_max_size_error)
+
+    def test_full_encode_decode(self):
+        test_input = os.urandom(128)
+        encoded_data = humanencoding.encode(test_input, checksum=True)
+        decoded_output = humanencoding.decode(encoded_data)
+        self.assertEqual(test_input,
+                         decoded_output)
 
 
 if __name__ == '__main__':
