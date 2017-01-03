@@ -1,5 +1,7 @@
 # Human encoding of binary data specification
 
+ **Specification version: 2017-01-03**
+
 This specifications describes the conversion of binary data to human readable
 words and the inverse conversion of human readable words into binary data. This
 specification provides a method similar to base64 or hex encoding for binary
@@ -10,12 +12,12 @@ Below is a comparison between various binary encoding menthods and their
 resulting output size. Note the average word length used in the current word
 list is 7.716 characters.
 
-| method         | input | output               | chars per byte | increase |
-|----------------|-------|----------------------|----------------|----------|
-| hex            | test  | 74657374             | 2              | 150%     |
-| base64         | test  | dGVzdA==             | 1.333          | 133%     |
-| base32         | test  | ORSXG5A=             | 1.625          | 162.5%   |
-| human encoding | test  | interstate instilled | 3.858          | 385.8%   |
+| method         | input | output               | char per byte | avg increase |
+|----------------|-------|----------------------|---------------|--------------|
+| hex            | test  | 74657374             | 2             | 50%          |
+| base64         | test  | dGVzdA==             | 1.333         | 33%          |
+| base32         | test  | ORSXG5A=             | 1.625         | 62.5%        |
+| human encoding | test  | interstate instilled | 3.858         | 285.8%       |
 
 # Goals
 
