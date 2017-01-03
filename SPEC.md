@@ -12,12 +12,12 @@ Below is a comparison between various binary encoding menthods and their
 resulting output size. Note the average word length used in the current word
 list is 7.716 characters.
 
-| method         | input | output               | char per byte | avg increase |
-|----------------|-------|----------------------|---------------|--------------|
-| hex            | test  | 74657374             | 2             | 50%          |
-| base64         | test  | dGVzdA==             | 1.333         | 33%          |
-| base32         | test  | ORSXG5A=             | 1.625         | 62.5%        |
-| human encoding | test  | interstate instilled | 3.858         | 285.8%       |
+| method         | input    | output   | chars per byte | average increase |
+|----------------|----------|----------|----------------|------------------|
+| hex            | \x11\x22 | 1122     | 2              | 50%              |
+| base64         | \x11\x22 | ESI=     | 1.333          | 33%              |
+| base32         | \x11\x22 | CERA==== | 1.625          | 62.5%            |
+| human encoding | \x11\x22 | carousel | 3.858          | 285.8%           |
 
 # Goals
 
