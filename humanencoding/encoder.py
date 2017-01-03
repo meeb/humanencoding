@@ -28,6 +28,8 @@ DEFAULT_WORDLIST_VERSION = 1
 CHECKSUM_WORD = 'check'
 PADDING_WORD = 'null'
 WORDLIST_SIZE = 65536
+DEFAULT_MAX_ENCODING_BYTES = 10240
+DEFAULT_MAX_DECODING_WORDS = 1024
 
 
 class HumanEncodingError(Exception):
@@ -35,14 +37,14 @@ class HumanEncodingError(Exception):
     pass
 
 
-_wordlist = []
+wordlist = []
 
 
 def lazily_load_wordlist(version):
-    global _wordlist
+    global wordlist
     version = int(version)
-    if _wordlist:
-        return _wordlist
+    if wordlist:
+        return
     wordlist_module_name = '.wordlist_v{}'.format(version)
     try:
         wordlist_module = importlib.import_module(wordlist_module_name,
@@ -50,21 +52,20 @@ def lazily_load_wordlist(version):
     except Exception as e:
         err = 'Invalid word list module: {} ({})'
         raise HumanEncodingError(err.format(wordlist_module_name, e))
-    words = getattr(wordlist_module, 'words', None)
-    if not words:
+    wordlist = getattr(wordlist_module, 'words', None)
+    if not wordlist:
         raise HumanEncodingError('Word list module has no words attribute')
-    elif len(words) != WORDLIST_SIZE:
+    elif len(wordlist) != WORDLIST_SIZE:
         err = 'Word list is in invalid size, found {} and expected {} words'
         raise HumanEncodingError(err.format(len(words), WORDLIST_SIZE))
-    _wordlist = words
-    return _wordlist
 
 
 def _bytes_to_int(b):
     return unpack('<H', b)[0]
 
 
-def _chunk_to_word(chunk, wordlist):
+def _chunk_to_word(chunk):
+    global wordlist
     try:
         return wordlist[_bytes_to_int(chunk)]
     except IndexError:
@@ -76,7 +77,8 @@ def _int_to_bytes(i):
     return pack('<H', i)
 
 
-def _word_to_chunk(word, wordlist):
+def _word_to_chunk(word):
+    global wordlist
     try:
         return _int_to_bytes(wordlist.index(word))
     except ValueError:
@@ -85,8 +87,12 @@ def _word_to_chunk(word, wordlist):
 
 
 def encode(binary_data, version=DEFAULT_WORDLIST_VERSION, checksum=False,
-           return_string=True):
-    wordlist = lazily_load_wordlist(version=version)
+           return_string=True, max_bytes=DEFAULT_MAX_ENCODING_BYTES):
+    global wordlist
+    if not isinstance(binary_data, (bytes, bytearray)):
+        err = 'Data must be in bytes, convert it first. Got: {}'
+        raise HumanEncodingError(err.format(type(binary_data)))
+    lazily_load_wordlist(version=version)
     data_len = len(binary_data)
     padded = data_len % 2 == 1
     if padded:
@@ -95,39 +101,45 @@ def encode(binary_data, version=DEFAULT_WORDLIST_VERSION, checksum=False,
     encoded_output = []
     for i in range(0, data_len, 2):
         chunk = binary_data[i: i + 2]
-        encoded_output.append(_chunk_to_word(chunk, wordlist))
+        encoded_output.append(_chunk_to_word(chunk))
     if padded:
         encoded_output.append(PADDING_WORD)
     if checksum:
         encoded_output.append(CHECKSUM_WORD)
         checksum_int = crc32(binary_data[:-1] if padded else binary_data)
         checksum_bytes = pack('<i', checksum_int)
-        encoded_output.append(_chunk_to_word(checksum_bytes[0:2], wordlist))
-        encoded_output.append(_chunk_to_word(checksum_bytes[2:4], wordlist))
-    return ' '.join(encoded_output) if string else encoded_output
+        encoded_output.append(_chunk_to_word(checksum_bytes[0:2]))
+        encoded_output.append(_chunk_to_word(checksum_bytes[2:4]))
+    return ' '.join(encoded_output) if return_string else encoded_output
 
 
-def decode(words, version=DEFAULT_WORDLIST_VERSION):
-    wordlist = lazily_load_wordlist(version=version)
+def decode(words, version=DEFAULT_WORDLIST_VERSION,
+           max_words=DEFAULT_MAX_DECODING_WORDS):
+    global wordlist
+    lazily_load_wordlist(version=version)
     if isinstance(words, str):
         words = words.split()
+    if not isinstance(words, (list, tuple)):
+        err = 'Words must be a string, list or tuple. Got: {}'
+        raise HumanEncodingError(err.format(type(words)))
     words = [str(w).lower() for w in words]
     checksum_words = []
     if len(words) > 3 and words[-3] == CHECKSUM_WORD:
         checksum_words = words[-2:]
         words = words[:-3]
-    is_padded = False
     if words[-1] == PADDING_WORD:
         is_padded = True
         words = words[:-1]
+    else:
+        is_padded = False
     output = b''
     for word in words:
-        output += _word_to_chunk(word, wordlist)
+        output += _word_to_chunk(word)
     if is_padded:
         output = output[:-1]
     if checksum_words:
-        checksum_packed = _word_to_chunk(checksum_words[0], wordlist)
-        checksum_packed += _word_to_chunk(checksum_words[1], wordlist)
+        checksum_packed = _word_to_chunk(checksum_words[0])
+        checksum_packed += _word_to_chunk(checksum_words[1])
         checksum_unpacked = unpack('<i', checksum_packed)[0]
         if checksum_unpacked != crc32(output):
             raise HumanEncodingError('Invalid CRC32 checksum')
