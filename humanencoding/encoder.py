@@ -40,11 +40,11 @@ class HumanEncodingError(Exception):
 wordlist = []
 
 
-def lazily_load_wordlist(version):
+def lazily_load_wordlist(version=DEFAULT_WORDLIST_VERSION):
     global wordlist
-    version = int(version)
     if wordlist:
         return
+    version = int(version)
     wordlist_module_name = '.wordlist_v{}'.format(version)
     try:
         wordlist_module = importlib.import_module(wordlist_module_name,
@@ -86,17 +86,24 @@ def _word_to_chunk(word):
         raise HumanEncodingError(err.format(word))
 
 
+def _crc32(data):
+    return crc32(data) & 0xffffffff
+
+
 def encode(binary_data, version=DEFAULT_WORDLIST_VERSION, checksum=False,
            return_string=True, max_bytes=DEFAULT_MAX_ENCODING_BYTES):
     global wordlist
     if not isinstance(binary_data, (bytes, bytearray)):
         err = 'Data must be in bytes, convert it first. Got: {}'
         raise HumanEncodingError(err.format(type(binary_data)))
+    if len(binary_data) > max_bytes:
+        err = 'Data is too big, allowed byte size: {} bytes, got: {} bytes'
+        raise HumanEncodingError(err.format(len(binary_data), max_bytes))
     lazily_load_wordlist(version=version)
     data_len = len(binary_data)
     padded = data_len % 2 == 1
     if padded:
-        binary_data += '\0'
+        binary_data += b'\0'
         data_len += 1
     encoded_output = []
     for i in range(0, data_len, 2):
@@ -106,8 +113,8 @@ def encode(binary_data, version=DEFAULT_WORDLIST_VERSION, checksum=False,
         encoded_output.append(PADDING_WORD)
     if checksum:
         encoded_output.append(CHECKSUM_WORD)
-        checksum_int = crc32(binary_data[:-1] if padded else binary_data)
-        checksum_bytes = pack('<i', checksum_int)
+        checksum_int = _crc32(binary_data[:-1] if padded else binary_data)
+        checksum_bytes = pack('<I', checksum_int)
         encoded_output.append(_chunk_to_word(checksum_bytes[0:2]))
         encoded_output.append(_chunk_to_word(checksum_bytes[2:4]))
     return ' '.join(encoded_output) if return_string else encoded_output
@@ -122,6 +129,9 @@ def decode(words, version=DEFAULT_WORDLIST_VERSION,
     if not isinstance(words, (list, tuple)):
         err = 'Words must be a string, list or tuple. Got: {}'
         raise HumanEncodingError(err.format(type(words)))
+    if len(words) > max_words:
+        err = 'Words are too big, allowed number of words: {}, got: {}'
+        raise HumanEncodingError(err.format(len(words), max_words))
     words = [str(w).lower() for w in words]
     checksum_words = []
     if len(words) > 3 and words[-3] == CHECKSUM_WORD:
@@ -140,7 +150,7 @@ def decode(words, version=DEFAULT_WORDLIST_VERSION,
     if checksum_words:
         checksum_packed = _word_to_chunk(checksum_words[0])
         checksum_packed += _word_to_chunk(checksum_words[1])
-        checksum_unpacked = unpack('<i', checksum_packed)[0]
-        if checksum_unpacked != crc32(output):
+        checksum_unpacked = unpack('<I', checksum_packed)[0]
+        if checksum_unpacked != _crc32(output):
             raise HumanEncodingError('Invalid CRC32 checksum')
     return output
