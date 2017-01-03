@@ -30,4 +30,5 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],
     keywords=('humanencoding',),
+    test_suite='tests',
 )
