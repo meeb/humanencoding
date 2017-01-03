@@ -3,7 +3,8 @@
 '''
     This script parses a wordlist in a file (one word per line split by
     newlines) into a code structure. By default this is a Python tuple. The
-    generated data structure is written to stdout.
+    generated data structure is written to stdout. This tool is designed to be
+    readable, not fast.
 
     Example:
         $ python3 wordlist_to_code.py -w wordlist_v1 -l python > words.py

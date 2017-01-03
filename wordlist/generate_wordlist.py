@@ -6,20 +6,21 @@
     naively extract the easiest to pronounce words which do not contain
     punctuation. There is a simple blacklist of reserved, abusive and commonly
     used brand words applied to the dictionary. The resulting wordlist is
-    written to stdout.
+    written to stdout. This tool is designed to be readable, not fast.
 
     Example:
-        $ python3 generate_wordlist.py > wordlist.txt
+        $ python3 generate_wordlist.py -w american-english-words.txt \
+            -b blacklist.txt > wordlist.txt
 '''
 
 
+import os
 import sys
 import string
 import re
+import argparse
 
 
-AMERICAN_WORDLIST = 'american-english-words.txt'
-BLACKLIST = 'blacklist.txt'
 MIN_WORD_LEN = 2
 MAX_WORD_LEN = 12
 MAX_FRAGMENT_REPITITIONS = 3
@@ -80,10 +81,11 @@ def number_of_repetitions(word):
         yield (match.group(1), len(match.group(0))/len(match.group(1)))
 
 
-_blacklist = set(read_file(BLACKLIST))
+_blacklist = None
 
 
-def clean_word(word):
+def clean_word(word, blacklist_file):
+    global _blacklist
     word = str(word).lower().strip()
     if not word:
         return
@@ -112,10 +114,26 @@ def word_score(word):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-b', '--blacklist', type=str,
+                        default='blacklist.txt',
+                        help='Blacklist of words to ignore')
+    parser.add_argument('-w', '--wordlist', type=str, default='wordlist.txt',
+                        help='Input wordlist file')
+    args = parser.parse_args()
+    wordlist_file = args.wordlist
+    blacklist_file = args.blacklist
+    if not os.path.isfile(wordlist_file):
+        err = 'Wordlist path is not a file: {}'
+        raise Exception(err.format(wordlist_file))
+    if not os.path.isfile(blacklist_file):
+        err = 'Blacklist path is not a file: {}'
+        raise Exception(err.format(blacklist_file))
     # process the words into a unique set
     uniquewords = set()
-    for word in read_file(AMERICAN_WORDLIST):
-        word = clean_word(word)
+    _blacklist = set(read_file(blacklist_file))
+    for word in read_file(wordlist_file):
+        word = clean_word(word, blacklist_file)
         if not word:
             continue
         uniquewords.add(word)
