@@ -37,6 +37,11 @@ class HumanEncodingError(Exception):
     pass
 
 
+class ChecksumError(HumanEncodingError):
+
+    pass
+
+
 wordlist = []
 
 
