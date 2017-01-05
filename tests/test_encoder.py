@@ -21,54 +21,54 @@ class TestEncoder(unittest.TestCase):
 
     def test_encode(self):
         test_input = b'test'
-        expected_output = 'handset interview'
+        expected_output = 'hatsful journeyings'
         self.assertEqual(humanencoding.encode(test_input),
                          expected_output)
 
     def test_encode_list(self):
         test_input = b'test'
-        expected_output = ['handset', 'interview']
+        expected_output = ['hatsful', 'journeyings']
         self.assertEqual(humanencoding.encode(test_input, return_string=False),
                          expected_output)
 
     def test_decode(self):
-        test_input = 'handset interview'
+        test_input = 'hatsful journeyings'
         expected_output = b'test'
         self.assertEqual(humanencoding.decode(test_input),
                          expected_output)
 
     def test_decode_list(self):
-        test_input = ['handset', 'interview']
+        test_input = ['hatsful', 'journeyings']
         expected_output = b'test'
         self.assertEqual(humanencoding.decode(test_input),
                          expected_output)
 
     def test_encode_padding(self):
         test_input = b'testa'
-        expected_output = 'handset interview abilene null'
+        expected_output = 'hatsful journeyings ableist null'
         self.assertEqual(humanencoding.encode(test_input),
                          expected_output)
 
     def test_decode_padding(self):
-        test_input = 'handset interview abilene null'
+        test_input = 'hatsful journeyings ableist null'
         expected_output = b'testa'
         self.assertEqual(humanencoding.decode(test_input),
                          expected_output)
 
     def test_encode_checksum(self):
         test_input = b'test'
-        expected_output = 'handset interview check laughingly sterility'
+        expected_output = 'hatsful journeyings check lighteners stocking'
         self.assertEqual(humanencoding.encode(test_input, checksum=True),
                          expected_output)
 
     def test_encode_checksum(self):
-        test_input = 'handset interview check laughingly sterility'
+        test_input = 'hatsful journeyings check lighteners stocking'
         expected_output = b'test'
         self.assertEqual(humanencoding.decode(test_input),
                          expected_output)
 
     def test_invalid_checksum(self):
-        test_input = 'handset interview check laughingly test'
+        test_input = 'test journeyings check lighteners stocking'
         try:
             humanencoding.decode(test_input)
             raised_checksum_error = False
@@ -87,7 +87,7 @@ class TestEncoder(unittest.TestCase):
         self.assertTrue(raised_max_size_error)
 
     def test_decode_max_size(self):
-        test_input = ['handset', 'interview']
+        test_input = ['hatsful', 'journeyings']
         max_words = len(test_input) - 1
         try:
             humanencoding.decode(test_input, max_words=max_words)
