@@ -10,14 +10,14 @@ for readability and usability by humans.
 
 Below is a comparison between various binary encoding menthods and their
 resulting output size. Note the average word length used in the current word
-list is 7.716 characters.
+list is 7.244 characters.
 
 | method         | input    | output   | chars per byte | average increase |
 |----------------|----------|----------|----------------|------------------|
 | hex            | \x11\x22 | 1122     | 2              | 50%              |
 | base64         | \x11\x22 | ESI=     | 1.333          | 33%              |
 | base32         | \x11\x22 | CERA==== | 1.625          | 62.5%            |
-| human encoding | \x11\x22 | carousel | 3.858          | 285.8%           |
+| human encoding | \x11\x22 | castable | 3.622          | 262.2%           |
 
 # Goals
 
