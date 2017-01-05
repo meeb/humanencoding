@@ -32,7 +32,7 @@ Basic usage:
 from humanencoding import encode, decode
 test_data = b'test'
 encoded_data = encode(test_data)
-# prints: 'handset interview'
+# prints: 'hatsful journeyings'
 print(encoded_data)
 decoded_data = decode(encoded_data)
 # prints: b'test'
@@ -45,16 +45,16 @@ Using CRC32 checksums:
 from humanencoding import encode, decode, ChecksumError
 test_data = b'test'
 encoded_data = encode(test_data, checksum=True, return_string=False)
-# prints: ['handset', 'interview', 'check', 'laughingly', 'sterility']
+# prints: ['hatsful', 'journeyings', 'check', 'lighteners', 'stocking']
 print(encoded_data)
 decoded_data = decode(encoded_data)
 # prints: b'test'
 print(decoded_data)
 
-# modify the last word in the encoded_data (sterility) to something invalid
+# modify the first word in the encoded message (hatsful) to something invalid
 # to break the checksum, attempt to decode it again and catch the error
-encoded_data[-1] = 'broken'
-# prints: ['handset', 'interview', 'check', 'laughingly', 'broken']
+encoded_data[0] = 'broken'
+# prints: ['broken', 'journeyings', 'check', 'lighteners', 'stocking']
 print(encoded_data)
 try:
     decode(encoded_data)
