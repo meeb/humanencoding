@@ -32,6 +32,12 @@ DEFAULT_MAX_ENCODING_BYTES = 10240
 DEFAULT_MAX_DECODING_WORDS = 1024
 
 
+try:
+    text_type = unicode
+except NameError:
+    text_type = str
+
+
 class HumanEncodingError(Exception):
 
     pass
@@ -129,7 +135,7 @@ def decode(words, version=DEFAULT_WORDLIST_VERSION,
            max_words=DEFAULT_MAX_DECODING_WORDS):
     global wordlist
     lazily_load_wordlist(version=version)
-    if isinstance(words, str):
+    if isinstance(words, (str, text_type)):
         words = words.split()
     if not isinstance(words, (list, tuple)):
         err = 'Words must be a string, list or tuple. Got: {}'
