@@ -14,10 +14,10 @@ list is 7.244 characters.
 
 | method         | input    | output   | chars per byte | average increase |
 |----------------|----------|----------|----------------|------------------|
-| hex            | \x11\x22 | 1122     | 2              | 50%              |
-| base64         | \x11\x22 | ESI=     | 1.333          | 33%              |
-| base32         | \x11\x22 | CERA==== | 1.625          | 62.5%            |
-| human encoding | \x11\x22 | castable | 3.622          | 262.2%           |
+| hex            | \x11\x22 | 1122     | 2              | 200%             |
+| base64         | \x11\x22 | ESI=     | 1.333          | 133%             |
+| base32         | \x11\x22 | CERA==== | 1.625          | 162.5%           |
+| human encoding | \x11\x22 | castable | 3.622          | 362.2%           |
 
 # Goals
 
