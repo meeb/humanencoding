@@ -1,7 +1,7 @@
 '''
 
     humanencoding, binary data to dictionary words encoder and decoder
-    Copyright (C) 2017 M GRP Limited <https://m.pr/>
+    Copyright (C) 2020 meeb@meeb.org
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
